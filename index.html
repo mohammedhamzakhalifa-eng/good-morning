@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صباح الخير يا حبيبتي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            color: #4a4a4a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ===== BEAUTIFUL BACKGROUND ===== */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 10%, #ffb6d9 0%, transparent 60%),
+                radial-gradient(ellipse 60% 70% at 80% 80%, #c9b8ff 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 50% 50%, #ffd6ec 0%, transparent 70%),
+                linear-gradient(160deg, #ffe0f0 0%, #f0e6ff 50%, #ddeeff 100%);
+        }
+
+        /* Subtle noise texture overlay */
+        .bg-canvas::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Floating blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.35;
+            pointer-events: none;
+            animation: blobDrift linear infinite alternate;
+        }
+        .blob-1 { width: 350px; height: 350px; background: #ff8fc8; top: -80px; left: -80px; animation-duration: 12s; }
+        .blob-2 { width: 280px; height: 280px; background: #b094ff; bottom: -60px; right: -60px; animation-duration: 15s; }
+        .blob-3 { width: 200px; height: 200px; background: #7ec8ff; top: 40%; left: 10%; animation-duration: 10s; }
+        .blob-4 { width: 160px; height: 160px; background: #ffb3d9; bottom: 20%; right: 15%; animation-duration: 9s; }
+
+        @keyframes blobDrift {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 20px) scale(1.08); }
+        }
+
+        /* ===== INTRO SCREEN ===== */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            gap: 0;
+        }
+
+        /* wrapper that holds text + heart — moves up together */
+        #intro-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .intro-text-wrapper {
+            position: relative;
+            z-index: 102;
+            /* This wrapper stays in place; only heart grows downward */
+            margin-bottom: 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .intro-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e91e8c;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        .intro-text {
+            font-size: 28px;
+            font-weight: 900;
+            color: #c2185b;
+            text-shadow: 0 3px 12px rgba(255,100,150,0.25);
+            user-select: none;
+            text-align: center;
+            padding: 0 20px;
+            min-height: 44px;
+            line-height: 1.4;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+
+
+        /* Heart — grows normally upward */
+        .heart-container {
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            z-index: 101;
+        }
+
+        .clickable-heart {
+            font-size: 80px;
+            user-select: none;
+            filter: drop-shadow(0 10px 30px rgba(216, 27, 96, 0.5));
+            display: block;
+            animation: pulseHeartBeat 1.5s infinite;
+            transform-origin: center top;
+        }
+
+        @keyframes pulseHeartBeat {
+            0%   { transform: scale(1); }
+            15%  { transform: scale(1.15); }
+            30%  { transform: scale(1); }
+            45%  { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* Ripple on click */
+        .ripple {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 100, 150, 0.4);
+            transform: translate(-50%, -50%) scale(0);
+            animation: rippleOut 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes rippleOut {
+            to { transform: translate(-50%, -50%) scale(8); opacity: 0; }
+        }
+
+        /* Explosion particle */
+        .explosion-particle {
+            position: fixed;
+            user-select: none;
+            pointer-events: none;
+            transition: all 1.2s cubic-bezier(0.1, 0.8, 0.3, 1);
+            opacity: 1;
+            z-index: 110;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        #main-content {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px 40px;
+            border-radius: 32px;
+            box-shadow: 
+                0 20px 60px rgba(194, 24, 91, 0.12),
+                0 4px 20px rgba(0,0,0,0.06),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+            text-align: center;
+            max-width: 90%;
+            width: 430px;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Decorative top border */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #f48fb1, #ce93d8, #f48fb1, transparent);
+            border-radius: 0 0 8px 8px;
+        }
+
+        h1 {
+            color: #c2185b;
+            font-size: 27px;
+            margin-bottom: 28px;
+            font-weight: 900;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .message-line {
+            font-size: 19px;
+            line-height: 1.75;
+            margin-bottom: 16px;
+            color: #3a3a3a;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .message-line:nth-child(2) { animation-delay: 1.2s; }
+        .message-line:nth-child(3) { animation-delay: 3s; }
+        .message-line:nth-child(4) { animation-delay: 5s; }
+        .message-line:nth-child(5) { animation-delay: 7s; }
+        .message-line:nth-child(6) {
+            animation-delay: 9s;
+            font-weight: 700;
+            color: #c2185b;
+            margin-bottom: 0;
+            font-size: 20px;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-icon {
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.18); }
+        }
+
+        /* Floating elements */
+        .hearts-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-element {
+            position: absolute;
+            bottom: -40px;
+            animation: floatUp linear infinite;
+            opacity: 0;
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.7));
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.9; }
+            90%  { opacity: 0.9; }
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 36px 24px; }
+            h1 { font-size: 23px; }
+            .message-line { font-size: 17px; }
+            .clickable-heart { font-size: 65px; }
+            .intro-text { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background layers -->
+    <div class="bg-canvas"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+
+    <!-- Intro Screen -->
+    <div id="intro-screen">
+        <div id="intro-group">
+            <!-- Text + heart move up together -->
+            <div class="intro-text-wrapper">
+                <span class="intro-label">اضغطي للمفاجأة</span>
+                <div class="intro-text" id="intro-text">اضغطي على القلب ❤️</div>
+
+            </div>
+
+            <div class="heart-container" id="heart-wrapper">
+                <div class="clickable-heart" id="clickable-heart">❤️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Message Screen -->
+    <div id="main-content">
+        <div class="hearts-container" id="hearts-container"></div>
+        <div class="card">
+            <h1>صباح الخير يا نور عيني <span class="pulse-icon">☀️</span></h1>
+            <p class="message-line">يا أجمل حاجة فتحت عيني عليها في الدنيا دي..</p>
+            <p class="message-line">عارفة؟ كل يوم بصحى وأنا متأكد إن ربنا بيطبطب على قلبي بوجودك.</p>
+            <p class="message-line">زي ما نور الصبح بيصحي الشوارع، طيفك بيصحي روحي وينورها.</p>
+            <p class="message-line">يا رب يومك يكون رايق وحنين زيك، وتلاقي فيه ألف حاجة تفرحك..</p>
+            <p class="message-line">بحبك، وصباحي مابيبدأش بجد غير بيكي. <span class="pulse-icon">❤️</span></p>
+        </div>
+    </div>
+
+    <script>
+        let clicks = 0;
+        const TOTAL_CLICKS = 10;
+        const heartWrapper  = document.getElementById('heart-wrapper');
+        const introGroup    = document.getElementById('intro-group');
+        const heartEl       = document.getElementById('clickable-heart');
+        const introText     = document.getElementById('intro-text');
+        const introScreen   = document.getElementById('intro-screen');
+        const mainContent   = document.getElementById('main-content');
+        const dotsContainer = null;
+
+        const phrases = [
+            "اضغطي على القلب ❤️",
+            "كمان مرة! 🥰",
+            "عاش! كملي.. 🤏",
+            "أقوى! 💪",
+            "بيكبر أهو! 🎈",
+            "كمان عشان خاطري! 😅",
+            "قررررربنا! 🏃‍♀️",
+            "ثلاثة... 🤩",
+            "اثنين... 😍",
+            "وااااااحد... 💥"
+        ];
+
+        heartWrapper.addEventListener('click', (e) => {
+            if (clicks >= TOTAL_CLICKS) return;
+            clicks++;
+
+            // Update text
+            if (clicks < TOTAL_CLICKS) {
+                introText.innerText = phrases[clicks];
+            }
+
+            // Scale heart normally (grows upward by default)
+            const scale = 1 + ((clicks / TOTAL_CLICKS) * 1.5);
+            heartWrapper.style.transform = `scale(${scale})`;
+
+            // Move the whole group (text + heart) upward so they don't go off screen
+            // Heart base size ~80px, grows up to ~200px extra → shift group up proportionally
+            const heartBaseSize = 80;
+            const extraGrowth = (scale - 1) * heartBaseSize; // extra pixels the heart grew
+            const upShift = extraGrowth * 0.5; // move group up by half the extra growth
+            introGroup.style.transform = `translateY(-${upShift}px)`;
+
+            // Ripple effect
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            heartWrapper.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(40);
+            }
+
+            if (clicks >= TOTAL_CLICKS) {
+                setTimeout(explodeHeart, 300);
+            }
+        });
+
+        function explodeHeart() {
+            heartWrapper.style.display = 'none';
+
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate([80, 40, 120]);
+            }
+
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            for (let i = 0; i < 70; i++) {
+                setTimeout(() => createParticle(centerX, centerY), i * 12);
+            }
+
+            setTimeout(() => {
+                introScreen.style.transition = 'opacity 0.8s ease';
+                introScreen.style.opacity = '0';
+                setTimeout(() => {
+                    introScreen.style.display = 'none';
+                    mainContent.style.display = 'flex';
+                    setInterval(createFloatingElement, 380);
+                }, 800);
+            }, 1000);
+        }
+
+        function createParticle(x, y) {
+            const p = document.createElement('div');
+            const emojis = ['❤️', '💖', '💕', '✨', '🌸', '💗', '🌷'];
+            p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            p.classList.add('explosion-particle');
+            p.style.fontSize = (Math.random() * 22 + 14) + 'px';
+            p.style.left = x + 'px';
+            p.style.top  = y + 'px';
+            p.style.transform = 'translate(-50%, -50%) scale(0.3)';
+            document.body.appendChild(p);
+
+            requestAnimationFrame(() => {
+                const angle    = Math.random() * Math.PI * 2;
+                const maxDist  = window.innerWidth > 600 ? 420 : 270;
+                const distance = Math.random() * maxDist + 60;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                p.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${Math.random() * 0.8 + 0.6}) rotate(${Math.random() * 360}deg)`;
+                p.style.opacity = '0';
+            });
+
+            setTimeout(() => p.remove(), 1300);
+        }
+
+        function createFloatingElement() {
+            const container = document.getElementById('hearts-container');
+            if (!container) return;
+            const el = document.createElement('div');
+            el.classList.add('floating-element');
+            const elements = ['✨', '🌸', '💖', '💕', '🦋', '🌷', '🤍', '💫'];
+            el.innerText = elements[Math.floor(Math.random() * elements.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            const duration = Math.random() * 7 + 6;
+            el.style.animationDuration = duration + 's';
+            el.style.animationDelay = (Math.random() * 2) + 's';
+            el.style.fontSize = (Math.random() * 14 + 11) + 'px';
+            container.appendChild(el);
+            setTimeout(() => el.remove(), (duration + 2) * 1000);
+        }
+    </script>
+</body>
+</html>
